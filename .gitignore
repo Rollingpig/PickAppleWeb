@@ -1,0 +1,43 @@
+# Dependencies and build output
+node_modules/
+dist/
+build/
+coverage/
+.nyc_output/
+
+# Local migration tools and original project files
+/scripts/
+/source-fla/
+*.fla
+*.swf
+*.xfl
+*.as
+
+# Browser debugging and local screenshots
+.playwright-mcp/
+playwright-report/
+test-results/
+/screenshots/
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Local settings, credentials and logs
+.env
+.env.*
+!.env.example
+*.log
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~

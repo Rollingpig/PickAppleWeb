@@ -1,0 +1,143 @@
+{
+  "explosion": {
+    "Motion_X": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      }
+    ],
+    "Motion_Y": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      }
+    ],
+    "Rotation_Z": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      }
+    ],
+    "Skew_X": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      }
+    ],
+    "Skew_Y": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      }
+    ],
+    "Scale_X": [
+      {
+        "frame": 0.0,
+        "value": 10.8643
+      },
+      {
+        "frame": 2.0,
+        "value": 99.7772
+      }
+    ],
+    "Scale_Y": [
+      {
+        "frame": 0.0,
+        "value": 10.8643
+      },
+      {
+        "frame": 2.0,
+        "value": 99.7772
+      }
+    ]
+  },
+  "popup": {
+    "Motion_X": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      },
+      {
+        "frame": 6.0,
+        "value": 0.0
+      },
+      {
+        "frame": 16.0,
+        "value": 0.0
+      },
+      {
+        "frame": 19.0,
+        "value": 0.0
+      }
+    ],
+    "Motion_Y": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      },
+      {
+        "frame": 6.0,
+        "value": -27.5
+      },
+      {
+        "frame": 16.0,
+        "value": -27.5
+      },
+      {
+        "frame": 19.0,
+        "value": -54.5
+      }
+    ],
+    "Rotation_Z": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      }
+    ],
+    "Skew_X": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      }
+    ],
+    "Skew_Y": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      }
+    ],
+    "Scale_X": [
+      {
+        "frame": 0.0,
+        "value": 100.0
+      }
+    ],
+    "Scale_Y": [
+      {
+        "frame": 0.0,
+        "value": 100.0
+      }
+    ],
+    "Alpha_Amount": [
+      {
+        "frame": 0.0,
+        "value": 0.0
+      },
+      {
+        "frame": 6.0,
+        "value": 100.0
+      },
+      {
+        "frame": 16.0,
+        "value": 100.0
+      },
+      {
+        "frame": 19.0,
+        "value": 0.0
+      }
+    ]
+  },
+  "chickHitFrames": 5,
+  "explosionFrames": 11,
+  "popupFrames": 19
+}
