@@ -29,6 +29,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .letter.combo{color:#ffff99;text-align:right;-webkit-text-stroke:calc(.65*1cqw/4.8) #5f4518;paint-order:stroke fill;text-shadow:calc(1*1cqw/4.8) calc(2*1cqw/4.8) calc(2*1cqw/4.8) #342310,0 0 calc(5*1cqw/4.8) #f9df6655}
 .letter.popup{color:#ffff66;-webkit-text-stroke:calc(.5*1cqw/4.8) #473616;paint-order:stroke fill;text-shadow:calc(1*1cqw/4.8) calc(2*1cqw/4.8) #251c14}
 .menu-lettering{width:100%;height:100%;display:block;filter:drop-shadow(0 calc(.7*1cqw/4.8) calc(.6*1cqw/4.8) #24150c)}
+.letter.menu-anniversary{text-align:center;color:#ffff99;font-weight:700;text-shadow:0 calc(1*1cqw/4.8) calc(2*1cqw/4.8) #342310}
 .popup-art{width:100%;height:100%;object-fit:contain}
 #notice{position:absolute;top:10%;left:8%;right:8%;pointer-events:none;text-align:center;color:#ffff99;background:#000c;border:1px solid #c9984f;border-radius:4px;padding:2%;font-size:calc(22*1cqw/4.8);opacity:0;transition:opacity .15s}
 #notice.visible{opacity:1}

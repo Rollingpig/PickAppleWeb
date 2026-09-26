@@ -1,4 +1,5 @@
 import {levelId,levelText,parseLevelText,validateLevel} from './level-format.js';
+import {createMovementInput} from './movement-input.js';
 const $=selector=>document.querySelector(selector);
 const canvas=$('#gameCanvas'),ctx=canvas.getContext('2d'),controls=$('#controls');
 const FPS=24,W=480,H=800;
@@ -8,7 +9,7 @@ let levels=[],custom=[],scores={},state='loading',group=0,mode='play',offset=0,c
 let last=0,accumulator=0,animationClock=0,noticeTimer,hits={},animations={},networkLevels=[],updateRequest=null;
 const RESOURCE='https://raw.githubusercontent.com/Rollingpig/PickingAppleGame/master/resource/';
 const VERSION=40;
-const keys={left:false,right:false};
+const keys=createMovementInput();
 const groups=[{key:'Classic',title:'初始关卡集'},{key:'Custom',title:'我的作品集'},{key:'Archive',title:'网络关卡集'}];
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));}catch{notice('浏览器无法保存数据，请导出关卡备份。');}};
@@ -28,9 +29,10 @@ function letter(id,value,x,y,w,h,size,kind){const node=document.createElement('s
 function input(id,value,x,y,w,h,size=30,type='text'){const node=document.createElement('input');node.id=id;node.className='field';node.type=type;node.value=value;node.setAttribute('aria-label',id);node.style.setProperty('--size',size);position(node,x,y,w,h);controls.append(node);return node;}
 function panel(text,x,y,w,h,size=25){const node=document.createElement('div');node.className='scroll-panel';node.textContent=text;node.style.setProperty('--size',size);position(node,x,y,w,h);controls.append(node);return node;}
 function pageCopy(value,x,y,w,h,size=25){const node=panel(value,x,y,w,h,size);node.classList.add('page-copy');return node;}
-function screen(name){state=name;controls.replaceChildren();$('#typography').replaceChildren();keys.left=keys.right=false;accumulator=0;}
+function screen(name){state=name;keys.reset();controls.replaceChildren();$('#typography').replaceChildren();accumulator=0;}
 function menu(){game=null;editor=null;screen('menu');
   const labelArt=document.createElement('img');labelArt.src=art['menu-lettering'].src;labelArt.className='menu-lettering';$('#typography').append(labelArt);
+  letter('menuAnniversary','12周年web重制版',40,300,400,32,24,'menu-anniversary');
   nativeHit('开始','menu','selectList_btn',()=>collections());
   nativeHit('DIY','menu','selectEdit_btn',()=>editSelection());
   nativeHit('关卡导出','menu','selectOutput_btn',()=>{group=1;mode='export';offset=0;levelSelection();});
@@ -124,12 +126,12 @@ function download(level,format){const raw=format==='txt'?levelText(level):JSON.s
 function start(level){current=level;editor=null;screen('game');game={frame:0,time:level.time,score:0,combo:0,maxCombo:0,caught:0,miss:0,bombs:0,x:187.9,next:0,items:[],effects:[],hurtFrames:0,explosion:null,paused:false,finished:false};gameControls();}
 function gameControls(){controls.replaceChildren();
   nativeHit('暂停','game','menu_btn',pause);
+  const movementButtons={};
   for(const [label,direction,name] of [['向左','left','leftBtn'],['向右','right','rightBtn']]){
     const node=nativeHit(label,'game',name,()=>{});
-    node.addEventListener('pointerdown',e=>{e.preventDefault();node.setPointerCapture(e.pointerId);keys[direction]=true;});
-    node.addEventListener('pointermove',e=>{const rect=node.getBoundingClientRect();keys[direction]=e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom;});
-    for(const event of ['pointerup','pointercancel','lostpointercapture'])node.addEventListener(event,()=>keys[direction]=false);
+    movementButtons[direction]=node;
   }
+  keys.bind(movementButtons);
   letter('timeValue',seconds(game.time),126.05,11.05,128.4,48.8,40,'time');
   letter('scoreValue',game.score,302,4,163,61,50,'score');
   letter('comboValue','',270.8,75.05,197.65,48.8,40,'combo');
@@ -230,9 +232,9 @@ function loop(time){const delta=Math.min(100,time-last);last=time;animationClock
 function importLevel(file){const reader=new FileReader();reader.onload=async()=>{try{const raw=String(reader.result);const level=validateLevel(raw.trim().startsWith('{')?JSON.parse(raw):parseLevelText(raw));level.group='Custom';level.id=levelId(level);await prepareBackground(level.background);storeCustom(level);group=1;offset=0;mode='play';levelSelection();notice('导入完成');}catch(error){notice(`无法导入：${error.message}`);}};reader.readAsText(file);}
 
 $('#importFile').addEventListener('change',e=>{if(e.target.files?.[0])importLevel(e.target.files[0]);e.target.value='';});
-document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;const key=e.key.toLowerCase();if(['arrowleft','arrowright','a','d',' ','escape'].includes(key))e.preventDefault();if(state==='game'){if(key==='arrowleft'||key==='a')keys.left=true;if(key==='arrowright'||key==='d')keys.right=true;if((key===' '||key==='escape')&&!e.repeat)pause();}else if(state==='pause'&&(key===' '||key==='escape')&&!e.repeat)resume();});
-document.addEventListener('keyup',e=>{const key=e.key.toLowerCase();if(key==='arrowleft'||key==='a')keys.left=false;if(key==='arrowright'||key==='d')keys.right=false;});
-window.addEventListener('blur',()=>{keys.left=keys.right=false;if(state==='game')pause();});
+document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;const key=e.key.toLowerCase();if(['arrowleft','arrowright','a','d',' ','escape'].includes(key))e.preventDefault();if(state==='game'){keys.setKey(key,true);if((key===' '||key==='escape')&&!e.repeat)pause();}else if(state==='pause'&&(key===' '||key==='escape')&&!e.repeat)resume();});
+document.addEventListener('keyup',e=>keys.setKey(e.key.toLowerCase(),false));
+window.addEventListener('blur',()=>{keys.reset();if(state==='game')pause();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='game')pause();});
 async function loadImage(url){return new Promise((resolve,reject)=>{const img=new Image();const timer=setTimeout(()=>{img.onload=img.onerror=null;reject(Error('图片加载超时'));},8000);img.onload=()=>{clearTimeout(timer);resolve(img);};img.onerror=()=>{clearTimeout(timer);reject(Error(url));};img.src=url;});}
 async function prepareBackground(name){if(backgrounds[name])return;try{backgrounds[name]=await loadImage(name);}catch{backgrounds[name]=backgrounds['level.png'];}}
