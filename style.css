@@ -3,6 +3,7 @@ html,body{margin:0;width:100%;height:100%;background:#333;overflow:hidden}
 body{display:flex;justify-content:center;align-items:center;height:100vh;height:100dvh;font-family:"Microsoft YaHei",sans-serif}
 #stage{position:relative;flex:none;width:min(100vw,60vh);width:min(100vw,60dvh);height:min(100vh,166.666667vw);height:min(100dvh,166.666667vw);max-width:100vw;max-height:100dvh;container-type:inline-size;background:#6394fa;overflow:hidden}
 canvas{display:block;width:100%;height:100%;touch-action:none}
+canvas,#typography,#controls button{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #controls,#typography{position:absolute;inset:0;pointer-events:none}
 .hit,.field,.scroll-panel,.wood,.plain-button,.letter{position:absolute;font-family:inherit}
 .hit,.field,.scroll-panel,.wood,.plain-button{pointer-events:auto}
