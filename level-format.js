@@ -19,20 +19,30 @@ export function legacyMD5(text) {
   }
   return hash.map(word=>Array.from({length:4},(_,i)=>((word>>>i*8)&255).toString(16).padStart(2,'0')).join('')).join('');
 }
-export function levelText(level){
+export function normalizeAuthor(value){
+  if(value==null)return '';
+  if(typeof value!=='string')throw Error('作者必须是文字');
+  const author=value.trim();
+  if(author.length>40)throw Error('作者最多 40 个字符');
+  if(/[\[\]:\x00-\x1f\x7f]/.test(author))throw Error('作者不能包含方括号、冒号或换行');
+  return author;
+}
+export function levelId(level){return legacyMD5(levelText(level,{includeAuthor:false}));}
+export function levelText(level,{includeAuthor=true}={}){
   const title=String(level.title).replace(/[\[\]]/g,'');
+  const author=includeAuthor?normalizeAuthor(level.author):'';
   const background=level.background.startsWith('native/')||/^https?:/.test(level.background)?level.background:`native/${level.background}`;
   return '############This is level data.Once modified, MD5 test will fail.############\r'+
-    `[title:${title}][time:${level.time}][chickspeed:${level.chickSpeed}][background:${background}][sequence:`+
+    `[title:${title}]${author?`[author:${author}]`:''}[time:${level.time}][chickspeed:${level.chickSpeed}][background:${background}][sequence:`+
     level.sequence.map(e=>`(${e.type},${e.x},${e.vy},${e.dropFrame},${e.reachFrame})`).join('')+']';
 }
 export function parseLevelText(raw){
-  const fields=Object.fromEntries([...raw.matchAll(/\[(title|time|chickspeed|background):([^\]]*)\]/g)].map(m=>[m[1],m[2]]));
+  const fields=Object.fromEntries([...raw.matchAll(/\[(title|author|time|chickspeed|background):([^\]]*)\]/g)].map(m=>[m[1],m[2]]));
   const sequence=raw.match(/\[sequence:([^\]]*)\]/)?.[1];
   if(sequence===undefined||!fields.title||!fields.time||!fields.chickspeed)throw Error('缺少关卡字段');
   const entries=[...sequence.matchAll(/\((n|gold|bomb),(-?\d+),(\d+),(-?\d+),(-?\d+)\)/g)];
   if(entries.map(e=>e[0]).join('')!==sequence.trim())throw Error('运动序列格式错误');
-  return {title:fields.title,time:Number(fields.time),chickSpeed:Number(fields.chickspeed),background:fields.background||'native/level1.png',sequence:entries.map(e=>({type:e[1],x:+e[2],vy:+e[3],dropFrame:+e[4],reachFrame:+e[5]}))};
+  return {title:fields.title,author:normalizeAuthor(fields.author),time:Number(fields.time),chickSpeed:Number(fields.chickspeed),background:fields.background||'native/level1.png',sequence:entries.map(e=>({type:e[1],x:+e[2],vy:+e[3],dropFrame:+e[4],reachFrame:+e[5]}))};
 }
 export function validateLevel(source){
   if(!source||!Array.isArray(source.sequence)||source.sequence.length>10000)throw Error('关卡格式错误');
@@ -40,6 +50,7 @@ export function validateLevel(source){
   const background=String(source.background||'level1.png').replace(/^native\//,'');
   if(!/^(level[123]?|trial|menu)\.png$/.test(background)&&!/^https?:\/\//.test(background))throw Error('不支持的背景路径');
   return {title:String(source.title||'导入关卡').slice(0,60),name:String(source.name||source.title||'导入关卡').slice(0,60),
+    author:normalizeAuthor(source.author),
     time:integer(source.time,2,10000),chickSpeed:integer(source.chickSpeed,1,100),background,
     sequence:source.sequence.map(e=>{if(!['n','gold','bomb'].includes(e.type))throw Error('物品类型错误');return {type:e.type,x:integer(e.x,-1000,1000),vy:integer(e.vy,1,200),dropFrame:integer(e.dropFrame,-10000,240000),reachFrame:integer(e.reachFrame,-10000,240000)};}).sort((a,b)=>a.dropFrame-b.dropFrame)};
 }

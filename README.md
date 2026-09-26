@@ -22,6 +22,7 @@ All assets needed to run the game are included in this repository.
 - Space pauses and resumes. Scores, custom levels, and imported levels are saved in this browser's local storage.
 - Click **DIY** to create a blank level or copy an existing level. Choose an item and click the board to place it in the current two-second window. Click a placed item to remove it. Use the bottom arrows to move between windows, the top arrow for settings, and **存储** to save.
 - **关卡导出** opens custom levels for original Flash TXT or JSON download. The **导入** button on that selection screen loads original TXT or exported JSON.
+- In **DIY → 更多设置**, enter an optional author (up to 40 characters). Network levels display their author at the top right of the title when available. TXT exports use `[author:Name]`; JSON exports use `author`. Author metadata does not change a level's ID or separate its saved scores.
 
 ## Levels and assets
 

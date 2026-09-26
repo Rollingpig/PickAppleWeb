@@ -1,4 +1,4 @@
-import {legacyMD5,levelText,parseLevelText,validateLevel} from './level-format.js';
+import {levelId,levelText,parseLevelText,validateLevel} from './level-format.js';
 const $=selector=>document.querySelector(selector);
 const canvas=$('#gameCanvas'),ctx=canvas.getContext('2d'),controls=$('#controls');
 const FPS=24,W=480,H=800;
@@ -18,6 +18,8 @@ const title=level=>level.name||level.title;
 const collection=()=>all().filter(level=>level.group===groups[group].key);
 const high=level=>scores[level.id]?.[0]?.score??'None';
 const clone=value=>structuredClone(value);
+function storeCustom(level){const index=custom.findIndex(l=>l.id===level.id);if(index<0)custom.push(level);else custom[index]=level;write('pick-custom-v1',custom);}
+function authorLabel(level,x,y,w){if(level.group!=='Archive'||!level.author?.trim())return;const node=letter('',level.author.trim(),x,y,w,20,16,'level-author');node.title=level.author;node.setAttribute('aria-label',`作者：${level.author}`);}
 function notice(message){$('#notice').textContent=message;$('#notice').classList.add('visible');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('#notice').classList.remove('visible'),2300);}
 function position(node,x,y,w,h){Object.assign(node.style,{left:`${x/W*100}%`,top:`${y/H*100}%`,width:`${w/W*100}%`,height:`${h/H*100}%`});return node;}
 function hit(label,x,y,w,h,action,kind='hit'){const node=document.createElement('button');node.className=kind;node.type='button';node.textContent=label;node.setAttribute('aria-label',label);node.dataset.action=label;position(node,x,y,w,h);node.addEventListener('click',action);controls.append(node);return node;}
@@ -45,6 +47,7 @@ function collections(){game=null;mode='play';screen('collections');
 function levelSelection(){game=null;screen(mode==='edit'?'edit-levels':'levels');const list=collection(),count=mode==='edit'?5:7,startY=mode==='edit'?260:125;
   list.slice(offset,offset+count).forEach((level,index)=>{
     const y=startY+index*85;
+    authorLabel(level,mode==='play'?157:262,y+4,mode==='play'?151:164);
     hit(`关卡 ${title(level)}`,40,y,mode==='play'?275.0098:398.0127,80,()=>{current=level;if(mode==='edit')openEditor(level);else if(mode==='export')exportScreen(level);else start(level);});
     if(mode==='play')hit(`${title(level)} 高分榜`,323,y,102.9858,80.0146,()=>rank(level));
   });
@@ -63,6 +66,7 @@ function editSelection(){screen('edit-select');mode='edit';
   nativeHit('下翻','edit-select','down_btn',()=>{}).disabled=true;
 }
 function rank(level){current=level;screen('rank');const rows=scores[level.id]||[];
+  authorLabel(level,260,116,172);
   panel(title(level),46,140,390,60,45);
   panel(rows.length?rows.map((row,i)=>`${i+1}.  ${row.name}  ${row.score}`).join('\n'):'暂无记录',45,240,390,440,35);
   nativeHit('关卡','rank','exRank_btn',levelSelection);
@@ -109,7 +113,7 @@ function exitScreen(){write('pick-custom-v1',custom);write('pick-records-v1',sco
 function exportScreen(level){screen('export');
   pageCopy('点击下方 TXT 或 JSON 按钮下载关卡文件，可将文件发送给其他玩家。\n关卡内容 ID：',54,141.15,371,136.5,27);
   pageCopy('也可以复制下方的关卡文本，发送给其他玩家：',54,362.15,371,65.5,25);
-  const raw=levelText(level);panel(legacyMD5(raw),60,296,360,48,18).classList.add('export-id');
+  const raw=levelText(level);panel(levelId(level),60,296,360,48,18).classList.add('export-id');
   panel(raw,60,443.85,357,223.1,20).classList.add('export-data');
   nativeHit('回菜单','export','exOut_btn',menu);
   hit('TXT',210,720,90,60,()=>download(level,'txt'),'wood');
@@ -182,11 +186,13 @@ function editorControls(){screen('editor');const e=editor;
     const time=input('duration',e.level.time,128.8,79.65,83,42,30,'number');time.min=2;time.max=300;time.addEventListener('change',()=>e.level.time=Math.max(2,Math.min(300,Number(time.value)||30)));
     const speed=input('chickSpeed',e.level.chickSpeed,128.8,196.7,83,42,30,'number');speed.min=1;speed.max=30;speed.addEventListener('change',()=>e.level.chickSpeed=Math.max(1,Math.min(30,Number(speed.value)||12)));
     const background=input('background',e.level.background,125.95,137.65,243,42,23);background.addEventListener('change',async()=>{try{const checked=validateLevel({...e.level,background:background.value});e.level.background=checked.background;await prepareBackground(checked.background);}catch(error){notice(error.message);}});
+    letter('authorLabel','作者',264,196.7,190,30,23,'');
+    const author=input('levelAuthor',e.level.author||'',264,231,200,40,24);author.classList.add('author-field');author.maxLength=40;author.placeholder='可选';author.setAttribute('aria-label','关卡作者');author.addEventListener('input',()=>e.level.author=author.value);
 
     hit('速度锁定',198.95,257.35,45,45,()=>{e.lock=!e.lock;editorControls();});
   }
 }
-function saveEditor(){try{const l=validateLevel({...editor.level,title:editor.level.title.trim()||'自定义'});l.name=l.title;l.group='Custom';l.sequence=l.sequence.filter(item=>item.reachFrame<=l.time*24);l.id=legacyMD5(levelText(l));if(!custom.some(v=>v.id===l.id))custom.push(l);write('pick-custom-v1',custom);editor=null;menu();notice('关卡已保存到「我的作品集」');}catch(error){notice(error.message);}}
+function saveEditor(){try{const l=validateLevel({...editor.level,title:editor.level.title.trim()||'自定义'});l.name=l.title;l.group='Custom';l.sequence=l.sequence.filter(item=>item.reachFrame<=l.time*24);l.id=levelId(l);storeCustom(l);editor=null;menu();notice('关卡已保存到「我的作品集」');}catch(error){notice(error.message);}}
 
 canvas.addEventListener('pointerdown',e=>{
   if(state!=='editor'||options)return;const bounds=canvas.getBoundingClientRect();const x=(e.clientX-bounds.left)*480/bounds.width,y=(e.clientY-bounds.top)*800/bounds.height;if(y<80||y>620)return;
@@ -221,7 +227,7 @@ function draw(){ctx.clearRect(0,0,W,H);
   image(state);
 }
 function loop(time){const delta=Math.min(100,time-last);last=time;animationClock+=delta;while(animationClock>=1000/FPS){animate();animationClock-=1000/FPS;}if(state==='game'&&game&&!game.paused&&!game.finished){accumulator+=delta;while(accumulator>=1000/FPS){step();accumulator-=1000/FPS;}}draw();requestAnimationFrame(loop);}
-function importLevel(file){const reader=new FileReader();reader.onload=async()=>{try{const raw=String(reader.result);const level=validateLevel(raw.trim().startsWith('{')?JSON.parse(raw):parseLevelText(raw));level.group='Custom';level.id=legacyMD5(levelText(level));await prepareBackground(level.background);if(!custom.some(l=>l.id===level.id))custom.push(level);write('pick-custom-v1',custom);group=1;offset=0;mode='play';levelSelection();notice('导入完成');}catch(error){notice(`无法导入：${error.message}`);}};reader.readAsText(file);}
+function importLevel(file){const reader=new FileReader();reader.onload=async()=>{try{const raw=String(reader.result);const level=validateLevel(raw.trim().startsWith('{')?JSON.parse(raw):parseLevelText(raw));level.group='Custom';level.id=levelId(level);await prepareBackground(level.background);storeCustom(level);group=1;offset=0;mode='play';levelSelection();notice('导入完成');}catch(error){notice(`无法导入：${error.message}`);}};reader.readAsText(file);}
 
 $('#importFile').addEventListener('change',e=>{if(e.target.files?.[0])importLevel(e.target.files[0]);e.target.value='';});
 document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;const key=e.key.toLowerCase();if(['arrowleft','arrowright','a','d',' ','escape'].includes(key))e.preventDefault();if(state==='game'){if(key==='arrowleft'||key==='a')keys.left=true;if(key==='arrowright'||key==='d')keys.right=true;if((key===' '||key==='escape')&&!e.repeat)pause();}else if(state==='pause'&&(key===' '||key==='escape')&&!e.repeat)resume();});
