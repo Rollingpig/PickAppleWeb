@@ -4,13 +4,13 @@ A browser version of Pick!, using the original 480×800 layout. It includes the 
 
 ## Run
 
-From this repository's root (the `web-game` directory):
+From this repository's root (the `PickAppleWeb` directory):
 
 ```sh
 python -m http.server 8765
 ```
 
-Open <http://localhost:8765>. Any static web server can host the `web-game` directory. Opening `index.html` directly as a `file://` URL will not load the level JSON in most browsers.
+Open <http://localhost:8765>. Any static web server can host the `PickAppleWeb` directory. Opening `index.html` directly as a `file://` URL will not load the level JSON in most browsers.
 
 All assets needed to run the game are included in this repository.
 
