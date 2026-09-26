@@ -71,10 +71,10 @@ function rank(level){current=level;screen('rank');const rows=scores[level.id]||[
   panel(rows.length?rows.map((row,i)=>`${i+1}.  ${row.name}  ${row.score}`).join('\n'):'暂无记录',45,240,390,440,35);
   nativeHit('关卡','rank','exRank_btn',levelSelection);
 }
-async function fetchText(url){const response=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!response.ok)throw Error(`HTTP ${response.status}`);return response.text();}
+async function fetchText(url,options={}){const response=await fetch(url,{...options,signal:AbortSignal.timeout(8000)});if(!response.ok)throw Error(`HTTP ${response.status}`);return response.text();}
 async function about(){screen('about');nativeHit('回菜单','about','exAbout_btn',menu);
   const body=panel('正在读取…',54.5,267,371,405.55,27);body.classList.add('about-copy');
-  try{body.textContent=await fetchText(`${RESOURCE}about.txt`);}catch{try{body.textContent=await fetchText('data/about.txt');}catch{body.textContent='作者：Li D.R.\nPick! — 原 ActionScript / Adobe AIR 游戏的网页移植。';}}
+  try{body.textContent=await fetchText('data/about.txt',{cache:'no-store'});}catch{body.textContent='作者：Li D.R.\nPick! — 原 ActionScript / Adobe AIR 游戏的网页移植。';}
 }
 function update(){screen('update');nativeHit('回菜单','update','exUp_btn',menu);
   pageCopy('请先确保网络连接稳定可靠。\n点击“更新”，程序将访问网络，检查新的关卡和版本信息。\n建议在 WLAN 环境下进行。\n更新未完成，请勿离开本界面。',54,141.15,371,201.75);
